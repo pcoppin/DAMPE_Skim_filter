@@ -26,8 +26,8 @@ def SkimmerEv(dc):
             continue
 
         # 3: iBarMaxE cut
-        #   Events where the maximum energy OF A SINGLE HIT is deposited at the edge of the calorimeter?
-        #   By 1, 2, 3    So how come we skip the first layer of BGO? --> David: Would prob be removed by vertex cut anyway
+        #   Events where the maximum energy OF A SINGLE HIT is deposited at the edge of the calorimeter
+        #   We skip the first layer of BGO as --> David: These events would prob be removed by vertex cut anyway
         BGOhits = ev.pEvtBgoHits()
         BGO_NHits = BGOhits.GetHittedBarNumber()
         BGO_HitE = np.array(BGOhits.fEnergy, dtype=np.float)
