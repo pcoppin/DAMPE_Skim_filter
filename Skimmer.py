@@ -39,7 +39,7 @@ def SkimmerEv(dc):
             HitE = BGO_HitE[j]
             HitLayer = BGOhits.GetLayerID(j)
             if( (HitLayer in [1,2,3]) and (HitE>Hit123_maxE[HitLayer-1]) ):
-                # The following 3 definitions are all equivalent!
+                ### The following 3 definitions are all equivalent!
                 IdxBar = np.divide(BGO_HitBarId[j],2**6)%32
                 # IdxBar = ROOT.DmpBgoBase.GetBarID(int(BGO_HitBarId[j]))
                 # IdxBar = (BGO_HitBarId[j] >> 6) & 0x1f
