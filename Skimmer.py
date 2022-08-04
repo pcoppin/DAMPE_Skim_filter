@@ -45,9 +45,12 @@ def SkimmerEv(dc):
                 # IdxBar = (BGO_HitBarId[j] >> 6) & 0x1f
                 Hit123_maxE[HitLayer-1] = HitE
                 Hit123_BarIdx[HitLayer-1] = IdxBar
+        Criteria_is_met = False
         for j in range(3):
             if( Hit123_BarIdx[j]<=0 or Hit123_BarIdx[j]==21 ):
-                continue
+                Criteria_is_met = True
+        if( Criteria_is_met ):
+            continue
 
         # 4 & 5: FullBGO cut (+ shower vertex/direction successfully reconstructed)
         BGO_ZTop, BGO_ZBottom = 46, 448
