@@ -3,9 +3,9 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 
 # Load DmpSoftware and ROOT
-from ROOT import gSystem
-gSystem.Load('libDmpEvent.so')
-from ROOT import DmpChain
+import ROOT
+ROOT.gSystem.Load('libDmpEvent.so')
+ROOT.gSystem.Load('libDmpService.so')
 
 def SkimmerEv(dc):
     nevents = dc.GetEntries()
@@ -40,8 +40,8 @@ def SkimmerEv(dc):
             HitLayer = BGOhits.GetLayerID(j)
             if( (HitLayer in [1,2,3]) and (HitE>Hit123_maxE[HitLayer-1]) ):
                 ### The following 3 definitions are all equivalent!
-                IdxBar = np.divide(BGO_HitBarId[j],2**6)%32
-                # IdxBar = ROOT.DmpBgoBase.GetBarID(int(BGO_HitBarId[j]))
+                IdxBar = ROOT.DmpBgoBase.GetBarID(int(BGO_HitBarId[j]))
+                # IdxBar = np.divide(BGO_HitBarId[j],2**6)%32
                 # IdxBar = (BGO_HitBarId[j] >> 6) & 0x1f
                 Hit123_maxE[HitLayer-1] = HitE
                 Hit123_BarIdx[HitLayer-1] = IdxBar
