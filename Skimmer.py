@@ -7,16 +7,44 @@ import ROOT
 ROOT.gSystem.Load('libDmpEvent.so')
 ROOT.gSystem.Load('libDmpService.so')
 
-def SkimmerEv(dc):
+def TrueContainment(dc):
+    nevents = dc.GetEntries()
+    keys = ['start_x', 'start_y', 'start_z', 'stop_x', 'stop_y', 'stop_z']
+    dd = {key: np.zeros(nevents, dtype=float) for key in keys}
+    for i in range(nevents):
+        ev = dc.GetDmpEvent(i)
+        MC_truth_trajectories = list(ev.GetSimuTrajectoryCollection())
+        prim = MC_truth_trajectories[0]
+        for key in keys:
+            dd[key][i] = getattr(prim, key)
+        
+    TopZ, BottomZ = -325, 448.
+    cutTop, cutBottom = 440, 280
+    topX = (dd['stop_x']-dd['start_x'])/(dd['stop_z']-dd['start_z'])*(TopZ-dd['start_z']) + dd['start_x']
+    topY = (dd['stop_y']-dd['start_y'])/(dd['stop_z']-dd['start_z'])*(TopZ-dd['start_z']) + dd['start_y']
+    bottomX = (dd['stop_x']-dd['start_x'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_x']
+    bottomY = (dd['stop_y']-dd['start_y'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_y']
+    w_fid = (abs(topX)<cutTop) * (abs(topY)<cutTop) * (abs(bottomX)<cutBottom) * (abs(bottomY)<cutBottom)
+    ### REQUIRE THEM ALSO TO GO THROUGH THE TOP LAYER OF BGO!!!
+    BottomZ = 44.
+    cutBottom = 280
+    bottomX = (dd['stop_x']-dd['start_x'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_x']
+    bottomY = (dd['stop_y']-dd['start_y'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_y']
+    w_fid = w_fid * (abs(bottomX)<cutBottom) * (abs(bottomY)<cutBottom)
+    return w_fid
+
+def SkimmerEv(dc, E_BGO_min=15):
     nevents = dc.GetEntries()
     skim = np.zeros(nevents, dtype=np.bool)
     for i in range(nevents):
         ev = dc.GetDmpEvent(i)
 
-        # 1: BGO reconstructed energy greater than 20 GeV
+        # 1: BGO reconstructed energy greater than (15) GeV
+        # Rationale for 15, we want to be able to cut on the quenching corrected energy at 20 GeV later
+        # This way reduce stastics without lossing necessary events
         BGOrec = ev.pEvtBgoRec()
         BGO_TotalE = BGOrec.GetTotalEnergy() # [MeV]
-        if( BGO_TotalE<2e4 ):
+        if( BGO_TotalE<E_BGO_min ):
             continue
 
         # 2: rMaxELayer cut
