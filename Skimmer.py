@@ -33,7 +33,7 @@ def TrueContainment(dc):
     w_fid = w_fid * (abs(bottomX)<cutBottom) * (abs(bottomY)<cutBottom)
     return w_fid
 
-def SkimmerEv(dc, E_BGO_min=15):
+def SkimmerEv(dc, E_BGO_min=15e3):
     nevents = dc.GetEntries()
     skim = np.zeros(nevents, dtype=np.bool)
     for i in range(nevents):
@@ -41,7 +41,7 @@ def SkimmerEv(dc, E_BGO_min=15):
 
         # 1: BGO reconstructed energy greater than (15) GeV
         # Rationale for 15, we want to be able to cut on the quenching corrected energy at 20 GeV later
-        # This way reduce stastics without lossing necessary events
+        # This way we reduce stastics without lossing necessary events
         BGOrec = ev.pEvtBgoRec()
         BGO_TotalE = BGOrec.GetTotalEnergy() # [MeV]
         if( BGO_TotalE<E_BGO_min ):
