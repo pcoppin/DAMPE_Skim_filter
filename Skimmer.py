@@ -9,31 +9,30 @@ ROOT.gSystem.Load('libDmpService.so')
 
 def TrueContainment(dc):
     nevents = dc.GetEntries()
-    keys = ['start_x', 'start_y', 'start_z', 'stop_x', 'stop_y', 'stop_z']
+    keys = ['pv_x', 'pv_y', 'pv_z', 'pvpart_px', 'pvpart_py', 'pvpart_pz']
     dd = {key: np.zeros(nevents, dtype=float) for key in keys}
     for i in range(nevents):
         ev = dc.GetDmpEvent(i)
-        MC_truth_trajectories = list(ev.GetSimuTrajectoryCollection())
-        prim = MC_truth_trajectories[0]
+        MC_truth = ev.pEvtSimuPrimaries()
         for key in keys:
-            dd[key][i] = getattr(prim, key)
-        
+            dd[key][i] = getattr(MC_truth, key)
+    
     TopZ, BottomZ = -325, 448.
     cutTop, cutBottom = 440, 280
-    topX = (dd['stop_x']-dd['start_x'])/(dd['stop_z']-dd['start_z'])*(TopZ-dd['start_z']) + dd['start_x']
-    topY = (dd['stop_y']-dd['start_y'])/(dd['stop_z']-dd['start_z'])*(TopZ-dd['start_z']) + dd['start_y']
-    bottomX = (dd['stop_x']-dd['start_x'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_x']
-    bottomY = (dd['stop_y']-dd['start_y'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_y']
+    topX = dd['pvpart_px']/dd['pvpart_pz']*(TopZ-dd['pv_z']) + dd['pv_x']
+    topY = dd['pvpart_py']/dd['pvpart_pz']*(TopZ-dd['pv_z']) + dd['pv_y']
+    bottomX = dd['pvpart_px']/dd['pvpart_pz']*(BottomZ-dd['pv_z']) + dd['pv_x']
+    bottomY = dd['pvpart_py']/dd['pvpart_pz']*(BottomZ-dd['pv_z']) + dd['pv_y']
     w_fid = (abs(topX)<cutTop) * (abs(topY)<cutTop) * (abs(bottomX)<cutBottom) * (abs(bottomY)<cutBottom)
     ### REQUIRE THEM ALSO TO GO THROUGH THE TOP LAYER OF BGO!!!
     BottomZ = 44.
     cutBottom = 280
-    bottomX = (dd['stop_x']-dd['start_x'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_x']
-    bottomY = (dd['stop_y']-dd['start_y'])/(dd['stop_z']-dd['start_z'])*(BottomZ-dd['start_z']) + dd['start_y']
+    bottomX = dd['pvpart_px']/dd['pvpart_pz']*(BottomZ-dd['pv_z']) + dd['pv_x']
+    bottomY = dd['pvpart_py']/dd['pvpart_pz']*(BottomZ-dd['pv_z']) + dd['pv_y']
     w_fid = w_fid * (abs(bottomX)<cutBottom) * (abs(bottomY)<cutBottom)
     return w_fid
 
-def SkimmerEv(dc, E_BGO_min=15e3):
+def SkimmerEv(dc, E_BGO_min=1):
     nevents = dc.GetEntries()
     skim = np.zeros(nevents, dtype=np.bool)
     for i in range(nevents):
